@@ -1,12 +1,8 @@
 import { Module } from "@nestjs/common";
-import {
-  UnitOfWorkIdentifier,
-  UnitOfWorkContext,
-} from "./unitOfWork/unit-of-work.service";
-import { databaseProviders } from "./database.providers";
+import { databaseProviders } from "./database.provider";
 
 @Module({
-  providers: [...databaseProviders, UnitOfWorkIdentifier, UnitOfWorkContext], // Use the spread operator
-  exports: [...databaseProviders, UnitOfWorkIdentifier, UnitOfWorkContext],
+  providers: [databaseProviders], // Use the spread operator
+  exports: [databaseProviders],
 })
 export class DatabaseModule {}
