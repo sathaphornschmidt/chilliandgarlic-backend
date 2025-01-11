@@ -20,4 +20,14 @@ export class ReservationService {
       return this.reservationRepository.findAll(tx);
     });
   }
+
+  async getReservationDetailById(reservationId: string) {
+    return this.unitOfWork.startTransaction(async (tx) => {
+      const reservation = this.reservationRepository.findById(
+        tx,
+        reservationId,
+      );
+      return reservation;
+    });
+  }
 }

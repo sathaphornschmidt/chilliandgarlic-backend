@@ -7,7 +7,7 @@ export class BaseRepository<T> {
     return tx.any(`SELECT * FROM ${this.tableName}`);
   }
 
-  async findById(tx: ITask<any>, id: number): Promise<T> {
+  async findById(tx: ITask<any>, id: string): Promise<T> {
     return tx.oneOrNone(`SELECT * FROM ${this.tableName} WHERE id = $1`, [id]);
   }
 
