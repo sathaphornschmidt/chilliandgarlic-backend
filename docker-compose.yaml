@@ -2,12 +2,19 @@ version: "3"
 services:
   db:
     image: postgres
+    container_name: postgres-container
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
+    volumes:
+      - db-volume:/var/lib/postgresql/data # Use a named volume
+
+volumes:
+  db-volume: # Define the named volume
+    driver: local
   # app:
   #   image: my-node-app
   #   ports:
