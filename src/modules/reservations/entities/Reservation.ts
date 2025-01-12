@@ -47,7 +47,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
     phone: string,
     date: Date,
     time: string,
-    numberOfguest: number,
+    numberOfGuest: number,
   ): ReservationModel {
     return new ReservationModel({
       id: randomUUID(),
@@ -57,7 +57,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
       phone,
       date,
       time,
-      number_of_guests: numberOfguest,
+      number_of_guests: numberOfGuest,
       created_at: new Date(),
       updated_at: new Date(),
     });

@@ -7,10 +7,14 @@ import {
   ReservationsResponse,
 } from './dto/reservation.response';
 import { ReservationNotFoundError } from './errors/ReservationError';
+import { EmailService } from '../emails/email.service';
 
 @Injectable()
 export class ReservationsService {
-  constructor(private readonly unitOfWorkFactory: UnitOfWorkFactory) {}
+  constructor(
+    private readonly unitOfWorkFactory: UnitOfWorkFactory,
+    private readonly emailService: EmailService,
+  ) {}
 
   async createReservation(
     request: CreateReservationRequest,
@@ -30,6 +34,23 @@ export class ReservationsService {
       const createdReservation = await uow
         .getRepository<IReservation>('reservations')
         .create(reservationToCreate.toEntity());
+
+      try {
+        // Use the EmailService to send an email
+        const emailResponse = await this.emailService.sendEmailUsingApi(
+          request.reservation.email,
+          request.reservation.name,
+          new Date(request.reservation.date).toLocaleDateString(),
+          request.reservation.time,
+          request.reservation.number_of_guests.toString(),
+          request.reservation.phone,
+        );
+
+        console.log('Email sent successfully:', emailResponse);
+      } catch (error) {
+        console.error('Error sending email:', error);
+        throw error;
+      }
 
       await uow.saveChanges(); // Commit transaction
       return createdReservation;

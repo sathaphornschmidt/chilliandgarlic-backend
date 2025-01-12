@@ -1,0 +1,38 @@
+import { Injectable } from '@nestjs/common';
+import axios from 'axios';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+@Injectable()
+export class EmailService {
+  async sendEmailUsingApi(
+    to: string,
+    userName: string,
+    reservationDate: string,
+    reservationTime: string,
+    numberOfGuest: string,
+    userPhone: string,
+  ) {
+    const payload = {
+      service_id: 'Chilli_n_Garlic',
+      template_id: 'template_375sbwi',
+      user_id: process.env.EMAIL_JS_PUBLIC_KEY!,
+      accessToken: process.env.EMAIL_JS_PRIVATE_KEY!,
+      template_params: {
+        user_email: to,
+        user_name: userName,
+        reservation_date: reservationDate,
+        reservation_time: reservationTime,
+        number_of_guests: numberOfGuest,
+        user_phone: userPhone,
+        reply_to: 'sathaphorn.schmidt@gmail.com',
+      },
+    };
+
+    const response = await axios.post(
+      'https://api.emailjs.com/api/v1.0/email/send',
+      payload,
+    );
+    return response.data;
+  }
+}
