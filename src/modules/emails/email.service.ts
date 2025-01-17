@@ -12,6 +12,7 @@ export class EmailService {
     reservationTime: string,
     numberOfGuest: string,
     userPhone: string,
+    reservationDetailURL: string,
   ) {
     const payload = {
       service_id: 'Chilli_n_Garlic',
@@ -25,6 +26,7 @@ export class EmailService {
         reservation_time: reservationTime,
         number_of_guests: numberOfGuest,
         user_phone: userPhone,
+        reservation_detail: reservationDetailURL,
         reply_to: 'sathaphorn.schmidt@gmail.com',
       },
     };

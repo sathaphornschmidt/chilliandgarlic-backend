@@ -45,6 +45,7 @@ export class ReservationsService {
           request.reservation.time,
           request.reservation.number_of_guests.toString(),
           request.reservation.phone,
+          `http://localhost:3000/reservations/${createdReservation.id}`,
         );
 
         console.log('Email sent successfully:', emailResponse);
