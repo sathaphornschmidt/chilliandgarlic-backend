@@ -1,9 +1,11 @@
 import { Knex } from 'knex';
 import { BaseRepository } from '../repository/BaseRepository';
+import { ReservationsRepository } from '@/modules/reservations/reservation.repository';
 
 export class UnitOfWorkContext {
   private transaction: Knex.Transaction | null = null;
-  private repositories = new Map<string, BaseRepository<any>>();
+  // Step1: Add new repository here
+  public reservationRepository: ReservationsRepository;
 
   constructor(private knexInstance: Knex) {}
 
@@ -28,26 +30,6 @@ export class UnitOfWorkContext {
     }
     await this.transaction.rollback();
     this.transaction = null;
-  }
-
-  /**
-   * Registers a repository for an entity and makes it accessible as a property.
-   */
-  registerRepository<T>(entityName: string, repository: BaseRepository<T>): void {
-    if (this.repositories.has(entityName)) {
-      throw new Error(`Repository for ${entityName} is already registered.`);
-    }
-    this.repositories.set(entityName, repository);
-
-    // Dynamically bind the repository to this context as a property
-    (this as any)[entityName] = repository;
-  }
-
-  getRepository<T>(entityName: string): BaseRepository<T> {
-    if (!this.repositories.has(entityName)) {
-      throw new Error(`Repository for entity ${entityName} not found.`);
-    }
-    return this.repositories.get(entityName) as BaseRepository<T>;
   }
 
   getTransaction(): Knex.Transaction {

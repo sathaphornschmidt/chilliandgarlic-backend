@@ -11,10 +11,9 @@ export class UnitOfWorkFactory {
     const uowContext = new UnitOfWorkContext(this.knex);
     await uowContext.initialize();
 
-    // Register repositories
-    uowContext.registerRepository(
-      'reservations',
-      new ReservationsRepository(uowContext.getTransaction())
+    // Step2: Register repositories here
+    uowContext.reservationRepository = new ReservationsRepository(
+      uowContext.getTransaction(),
     );
 
     return uowContext;

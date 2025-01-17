@@ -16,7 +16,7 @@ export class ReservationsService {
     private readonly emailService: EmailService,
   ) {}
 
-  async createReservation(
+  public async createReservation(
     request: CreateReservationRequest,
   ): Promise<IReservation> {
     const uow = await this.unitOfWorkFactory.create();
@@ -31,9 +31,10 @@ export class ReservationsService {
         request.reservation.time,
         request.reservation.number_of_guests,
       );
-      const createdReservation = await uow
-        .getRepository<IReservation>('reservations')
-        .create(reservationToCreate.toEntity());
+      //saving to database
+      const createdReservation = await uow.reservationRepository.create(
+        reservationToCreate.toEntity(),
+      );
 
       try {
         // Use the EmailService to send an email
@@ -63,9 +64,7 @@ export class ReservationsService {
   async getReservationById(id: string): Promise<ReservationDetailResponse> {
     const uow = await this.unitOfWorkFactory.create();
 
-    const reservation = await uow
-      .getRepository<IReservation>('reservations')
-      .findById(id);
+    const reservation = await uow.reservationRepository.findById(id);
 
     if (!reservation) {
       throw new ReservationNotFoundError();
@@ -80,10 +79,7 @@ export class ReservationsService {
     const uow = await this.unitOfWorkFactory.create();
 
     try {
-      const reservations = await uow
-        .getRepository<IReservation>('reservations')
-        .findAll();
-      console.log('reservations', reservations);
+      const reservations = await uow.reservationRepository.findAll();
       return {
         reservations: reservations,
       };

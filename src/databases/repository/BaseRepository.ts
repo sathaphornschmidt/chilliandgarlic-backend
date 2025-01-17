@@ -3,11 +3,11 @@ import { Knex } from 'knex';
 export class BaseRepository<T> {
   constructor(
     private tableName: string,
-    private transaction: Knex.Transaction | null
+    private transaction: Knex.Transaction | null,
   ) {}
 
-  private getQuery(): Knex.QueryBuilder {
-    return this.transaction(this.tableName) 
+  public getQuery(): Knex.QueryBuilder {
+    return this.transaction(this.tableName);
   }
 
   // Method to handle errors and return empty array in case of invalid input
@@ -38,7 +38,9 @@ export class BaseRepository<T> {
 
   async create(entity: T): Promise<T> {
     try {
-      const [createdEntity] = await this.getQuery().insert(entity).returning('*');
+      const [createdEntity] = await this.getQuery()
+        .insert(entity)
+        .returning('*');
       return createdEntity;
     } catch (error) {
       return this.handleDatabaseError(error);
@@ -47,7 +49,10 @@ export class BaseRepository<T> {
 
   async update(id: string | number, entity: Partial<T>): Promise<T> {
     try {
-      const [updatedEntity] = await this.getQuery().where({ id }).update(entity).returning('*');
+      const [updatedEntity] = await this.getQuery()
+        .where({ id })
+        .update(entity)
+        .returning('*');
       return updatedEntity;
     } catch (error) {
       return this.handleDatabaseError(error);
