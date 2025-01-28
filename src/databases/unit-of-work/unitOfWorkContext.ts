@@ -15,13 +15,19 @@ export class UnitOfWorkContext {
     }
     this.transaction = await this.knexInstance.transaction();
   }
-
   async saveChanges(): Promise<void> {
     if (!this.transaction) {
       throw new Error('No active transaction. Call initialize() first.');
     }
-    await this.transaction.commit();
-    this.transaction = null;
+    try {
+      await this.transaction.commit();
+    } catch (error) {
+      await this.transaction.rollback();
+      throw error; // Rethrow the error for the caller to handle
+    } finally {
+      await this.transaction.destroy();
+      this.transaction = null;
+    }
   }
 
   async rollbackChanges(): Promise<void> {
@@ -37,5 +43,17 @@ export class UnitOfWorkContext {
       throw new Error('Transaction not initialized. Call initialize() first.');
     }
     return this.transaction;
+  }
+
+  async destroyTransaction(): Promise<void> {
+    await this.transaction.destroy();
+  }
+
+  async dispose(): Promise<void> {
+    if (this.transaction) {
+      await this.transaction.rollback();
+      await this.transaction.destroy();
+      this.transaction = null;
+    }
   }
 }

@@ -10,4 +10,8 @@ export class ReservationsRepository extends BaseRepository<IReservation> {
   public listReservationsOnDate(date: string) {
     return this.getQuery().select<IReservation[]>('*').where('date', '=', date);
   }
+
+  public deleteReservationById(id: string) {
+    return this.getQuery().delete().where('id', '=', id);
+  }
 }

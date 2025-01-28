@@ -9,3 +9,11 @@ export class CreateReservationRequest {
     number_of_guests: number;
   };
 }
+
+export class EditReservationRequest {
+  reservation: {
+    date?: Date;
+    time?: string;
+    number_of_guests?: number;
+  };
+}

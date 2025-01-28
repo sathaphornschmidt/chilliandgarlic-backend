@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ReservationsService } from '../reservations/reservations.service';
 import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
 import { IReservation } from '../reservations/entities/Reservation';
+import { using } from '@/utils/Disposable';
 
 @Injectable()
 export class TableAvailabilityService {
@@ -23,31 +24,33 @@ export class TableAvailabilityService {
   constructor(private readonly unitOfWorkFactory: UnitOfWorkFactory) {}
 
   public async getTableAvailabilityByDay(date: string) {
-    const uow = await this.unitOfWorkFactory.create();
+    const context = using(() => this.unitOfWorkFactory.create());
 
-    const reservations =
-      await uow.reservationRepository.listReservationsOnDate(date);
+    return context(async (uow) => {
+      const reservations =
+        await uow.reservationRepository.listReservationsOnDate(date);
 
-    let remainingQuota = { ...this.INITIAL_TABLE_HOURS_QUOTA };
+      let remainingQuota = { ...this.INITIAL_TABLE_HOURS_QUOTA };
 
-    reservations.forEach((reservation) => {
-      const reservationTime = reservation.time;
+      reservations.forEach((reservation) => {
+        const reservationTime = reservation.time;
 
-      if (remainingQuota[reservationTime] !== undefined) {
-        remainingQuota[reservationTime] = Math.max(
-          0,
-          remainingQuota[reservationTime] - 1,
-        );
-      }
+        if (remainingQuota[reservationTime] !== undefined) {
+          remainingQuota[reservationTime] = Math.max(
+            0,
+            remainingQuota[reservationTime] - 1,
+          );
+        }
+      });
+      // นับจำนวนการจอง ในแต่ละช่วงเวลา
+      // 1. ดึงข้อมูลการจองของวันที่ == date parameter
+      // 2. นับการจองในช่วงเวลา แต่ละช่วง 16:00 - 21:00 ในแต่ละชั่วโมง มีการจองกี่ครั้งในช่วงโมง
+      // 3. ส่งออกข้อมูลการจองในแต่ละช่วงเวลา ถ้ามากกว่า 4 จะถูกหักลบเหลือ 0 ก็คือในเวลานั้น ไม่มีโต๊ะว่างให้จอง
+
+      return {
+        'table-availability': remainingQuota,
+      };
     });
-    // นับจำนวนการจอง ในแต่ละช่วงเวลา
-    // 1. ดึงข้อมูลการจองของวันที่ == date parameter
-    // 2. นับการจองในช่วงเวลา แต่ละช่วง 16:00 - 21:00 ในแต่ละชั่วโมง มีการจองกี่ครั้งในช่วงโมง
-    // 3. ส่งออกข้อมูลการจองในแต่ละช่วงเวลา ถ้ามากกว่า 4 จะถูกหักลบเหลือ 0 ก็คือในเวลานั้น ไม่มีโต๊ะว่างให้จอง
-
-    return {
-      'table-availability': remainingQuota,
-    };
   }
 }
 
