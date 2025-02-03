@@ -4,9 +4,7 @@ export abstract class BaseRepository<T> {
   constructor(
     private tableName: string,
     private transaction: Knex.Transaction | null,
-  ) {
-    console.log('constructed');
-  }
+  ) {}
 
   public getQuery(): Knex.QueryBuilder {
     if (this.transaction !== null) {

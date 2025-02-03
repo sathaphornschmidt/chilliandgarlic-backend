@@ -10,7 +10,6 @@ export class UnitOfWorkContext {
   constructor(private knexInstance: Knex) {}
 
   async initialize(): Promise<void> {
-    console.log('heyy, initialized');
     if (this.transaction) {
       return;
     }
