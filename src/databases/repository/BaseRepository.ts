@@ -1,13 +1,19 @@
 import { Knex } from 'knex';
 
-export class BaseRepository<T> {
+export abstract class BaseRepository<T> {
   constructor(
     private tableName: string,
     private transaction: Knex.Transaction | null,
-  ) {}
+  ) {
+    console.log('constructed');
+  }
 
   public getQuery(): Knex.QueryBuilder {
-    return this.transaction(this.tableName);
+    if (this.transaction !== null) {
+      return this.transaction(this.tableName);
+    } else {
+      throw new Error('transaction is empty');
+    }
   }
 
   // Method to handle errors and return empty array in case of invalid input
@@ -20,23 +26,23 @@ export class BaseRepository<T> {
 
   async findById(id: string | number): Promise<T | undefined> {
     try {
-      const result = await this.getQuery().select().where({ id }).first();
+      const result = await this.getQuery().select('*').where({ id }).first();
       return result;
     } catch (error) {
       return this.handleDatabaseError(error);
     }
   }
 
-  async findAll(): Promise<T[]> {
+  public async findAll(): Promise<T[]> {
     try {
-      const result = await this.getQuery().select();
+      const result = await this.getQuery().select('*');
       return result;
     } catch (error) {
       return this.handleDatabaseError(error);
     }
   }
 
-  async create(entity: T): Promise<T> {
+  public async create(entity: T): Promise<T> {
     try {
       const [createdEntity] = await this.getQuery()
         .insert(entity)
@@ -47,15 +53,30 @@ export class BaseRepository<T> {
     }
   }
 
-  async update(id: string | number, entity: Partial<T>): Promise<T> {
+  public async update(
+    id: string | number,
+    entity: Partial<T>,
+  ): Promise<T | null> {
     try {
-      const [updatedEntity] = await this.getQuery()
+      console.log(`Updating entity with ID: ${id}`);
+
+      const updatedEntities = await this.getQuery()
         .where({ id })
         .update(entity)
-        .returning('*');
+        .returning('*'); // Returns an array of updated rows
+
+      if (!updatedEntities || updatedEntities.length === 0) {
+        console.warn(`Update failed: No entity found with ID ${id}`);
+        return null; // Explicitly return null if no rows were updated
+      }
+
+      const updatedEntity = updatedEntities[0]; // Get first element from the returned array
+      console.log('Update successful:', updatedEntity);
+
       return updatedEntity;
     } catch (error) {
-      return this.handleDatabaseError(error);
+      console.error(`Error updating entity with ID ${id}:`, error);
+      throw new Error('Failed to update entity'); // Throw an explicit error
     }
   }
 

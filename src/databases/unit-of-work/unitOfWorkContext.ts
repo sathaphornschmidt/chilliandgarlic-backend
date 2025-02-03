@@ -10,8 +10,9 @@ export class UnitOfWorkContext {
   constructor(private knexInstance: Knex) {}
 
   async initialize(): Promise<void> {
+    console.log('heyy, initialized');
     if (this.transaction) {
-      throw new Error('UnitOfWork is already initialized.');
+      return;
     }
     this.transaction = await this.knexInstance.transaction();
   }
@@ -22,6 +23,7 @@ export class UnitOfWorkContext {
     try {
       await this.transaction.commit();
     } catch (error) {
+      console.log('error uow', error);
       await this.transaction.rollback();
       throw error; // Rethrow the error for the caller to handle
     } finally {

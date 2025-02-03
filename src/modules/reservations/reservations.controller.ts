@@ -27,7 +27,7 @@ export class ReservationsController {
     return this.reservationsService.findAllReservations();
   }
 
-  @Get(':id')
+  @Get('/:id')
   async findById(@Param('id') id: string): Promise<ReservationDetailResponse> {
     return this.reservationsService.getReservationById(id);
   }
@@ -36,20 +36,41 @@ export class ReservationsController {
   async create(
     @Body() reservation: CreateReservationRequest,
   ): Promise<IReservation> {
-    const response = this.reservationsService.createReservation(reservation);
-    return response;
+    try {
+      const response =
+        await this.reservationsService.createReservation(reservation);
+      return response;
+    } catch (error) {
+      console.log('error occurred', error);
+      throw error;
+    }
   }
 
-  @Patch(':id')
+  @Patch('/:id')
   async editById(
     @Param('id') id: string,
-    @Body() reservation: EditReservationRequest,
+    @Body() request: EditReservationRequest,
   ): Promise<IReservation> {
-    return this.reservationsService.updateReservationById(id, reservation);
+    try {
+      const response = await this.reservationsService.updateReservationById(
+        id,
+        request,
+      );
+      return response;
+    } catch (error) {
+      console.log('error occurred', error);
+      throw error;
+    }
   }
 
-  @Delete(':id')
-  async deleteByID(@Param('id') id: string): Promise<void> {
-    await this.reservationsService.deleteReservation(id);
+  @Delete('/:id')
+  async deleteByID(@Param('id') id: string): Promise<{}> {
+    try {
+      await this.reservationsService.deleteReservation(id);
+      return {};
+    } catch (error) {
+      console.log('error occurred', error);
+      throw error;
+    }
   }
 }

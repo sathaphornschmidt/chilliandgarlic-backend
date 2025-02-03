@@ -1,5 +1,5 @@
 import { BaseEntity } from '@/abstractions/BaseEntity';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface IReservation {
   id: string;
@@ -28,7 +28,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
 
   constructor(data: IReservation) {
     super(data);
-    this.id;
+    this.id = data.id;
     this.name = data.name;
     this.email = data.email;
     this.countryCode = data.counter_code;
@@ -50,7 +50,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
     numberOfGuest: number,
   ): ReservationModel {
     return new ReservationModel({
-      id: randomUUID(),
+      id: uuidv4(),
       name,
       email,
       counter_code: countryCode,

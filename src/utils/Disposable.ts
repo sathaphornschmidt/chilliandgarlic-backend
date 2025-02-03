@@ -8,8 +8,9 @@ export function using(
     const context = await contextFactory();
     try {
       return await action(context);
-    } catch {
+    } catch (error) {
       await context.rollbackChanges();
+      throw error;
     } finally {
       await context.dispose();
     }

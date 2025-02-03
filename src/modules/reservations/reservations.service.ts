@@ -27,9 +27,12 @@ export class ReservationsService {
     const context = using(() => this.unitOfWorkFactory.create());
 
     return context(async (uow) => {
-      const existingReservation: IReservation = (
-        await this.getReservationById(id)
-      ).reservation;
+      await uow.initialize();
+      const existingReservation = await uow.reservationRepository.findById(id);
+
+      if (!existingReservation) {
+        throw new ReservationNotFoundError();
+      }
 
       //build update reservation
       const updatingReservation: IReservation = {
@@ -39,17 +42,13 @@ export class ReservationsService {
         counter_code: existingReservation.counter_code,
         name: existingReservation.name,
 
-        date: request.reservation.date
-          ? request.reservation.date
-          : existingReservation.date,
+        date: request?.reservation?.date ?? existingReservation.date,
 
-        number_of_guests: request.reservation.number_of_guests
-          ? request.reservation.number_of_guests
-          : existingReservation.number_of_guests,
+        number_of_guests:
+          request?.reservation?.number_of_guests ??
+          existingReservation.number_of_guests,
 
-        time: request.reservation.time
-          ? request.reservation.time
-          : existingReservation.time,
+        time: request?.reservation?.time ?? existingReservation.time,
 
         created_at: existingReservation.created_at,
         updated_at: new Date(),
@@ -111,8 +110,6 @@ export class ReservationsService {
           request.reservation.phone,
           `http://localhost:3000/reservations/${createdReservation.id}`,
         );
-
-        console.log('Email sent successfully:', emailResponse);
       } catch (error) {
         console.error('Error sending email:', error);
         throw error;
@@ -161,6 +158,7 @@ export class ReservationsService {
     const context = using(() => this.unitOfWorkFactory.create());
 
     return context(async (uow) => {
+      await uow.initialize();
       await uow.reservationRepository.deleteReservationById(id);
       await uow.saveChanges();
     });
