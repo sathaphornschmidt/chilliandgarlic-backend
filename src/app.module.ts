@@ -24,7 +24,12 @@ import { AuthenticationModule } from './modules/authentication/authentication.mo
               configService.get<string>('SESSION_SECRET') || 'session-secret',
             resave: false,
             saveUninitialized: false,
-            cookie: { maxAge: 3600000 }, // 1 hour
+            cookie: {
+              maxAge: 3600000,
+              httpOnly: true, // Prevent client-side access to the cookie
+              secure: false, // Set to true if using HTTPS
+              sameSite: 'lax', // Helps with cross-site requests
+            }, // 1 hour
             store: new PgSession({
               conObject: {
                 host: configService.get<string>('DB_HOST'),

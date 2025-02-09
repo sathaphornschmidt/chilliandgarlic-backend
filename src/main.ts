@@ -11,7 +11,10 @@ async function bootstrap() {
   app.useGlobalFilters(new BaseApplicationErrorFilter());
 
   // Enable CORS with options to allow all origins
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
