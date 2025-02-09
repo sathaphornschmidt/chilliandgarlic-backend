@@ -20,6 +20,31 @@ export class ReservationsService {
     private readonly emailService: EmailService,
   ) {}
 
+  private formatDate(date: Date | string): string {
+    return new Date(date).toISOString().split('T')[0]; // ✅ แปลงวันที่เป็น YYYY-MM-DD
+  }
+
+  private async sendEmail(
+    reservation: IReservation,
+    templateId: string,
+    reservationId: string,
+  ) {
+    try {
+      await this.emailService.sendEmailUsingApi(
+        reservation.email,
+        reservation.name,
+        this.formatDate(reservation.date),
+        reservation.time,
+        reservation.number_of_guests.toString(),
+        reservation.phone,
+        `http://localhost:3000/reservations/${reservationId}`,
+        templateId,
+      );
+    } catch (error) {
+      console.error(`❌ Error sending email (Template: ${templateId}):`, error);
+    }
+  }
+
   public async updateReservationById(
     id: string,
     request: EditReservationRequest,
@@ -34,23 +59,13 @@ export class ReservationsService {
         throw new ReservationNotFoundError();
       }
 
-      //build update reservation
       const updatingReservation: IReservation = {
-        id: existingReservation.id,
-        email: existingReservation.email,
-        phone: existingReservation.phone,
-        counter_code: existingReservation.counter_code,
-        name: existingReservation.name,
-
-        date: request?.reservation?.date ?? existingReservation.date,
-
+        ...existingReservation,
+        date: request.reservation?.date ?? existingReservation.date,
         number_of_guests:
-          request?.reservation?.number_of_guests ??
+          request.reservation?.number_of_guests ??
           existingReservation.number_of_guests,
-
-        time: request?.reservation?.time ?? existingReservation.time,
-
-        created_at: existingReservation.created_at,
+        time: request.reservation?.time ?? existingReservation.time,
         updated_at: new Date(),
       };
 
@@ -59,24 +74,12 @@ export class ReservationsService {
         updatingReservation,
       );
 
-      await uow.saveChanges(); // Commit transaction
+      await uow.saveChanges();
+
+      await this.sendEmail(updatedReservation, 'template_375sbwi', id);
+
       return updatedReservation;
     });
-
-    /**
-     * 1. get existing one /
-     * 2. update that one /
-     * 3. save the updated one
-     *
-     * one = reservation
-     * cmd + i - show hint:
-     * {
-     *  key: value
-     * }
-     *
-     * const a = newone ? newone : oldone
-     * const b = newone ?? oldone
-     */
   }
 
   public async createReservation(
@@ -88,40 +91,29 @@ export class ReservationsService {
       const reservationToCreate = ReservationModel.createNew(
         request.reservation.name,
         request.reservation.email,
-        request.reservation.country_code,
         request.reservation.phone,
         request.reservation.date,
         request.reservation.time,
         request.reservation.number_of_guests,
       );
-      //saving created reservation to database
+
       const createdReservation = await uow.reservationRepository.create(
         reservationToCreate.toEntity(),
       );
 
-      try {
-        // Use the EmailService to send an email
-        const emailResponse = await this.emailService.sendEmailUsingApi(
-          request.reservation.email,
-          request.reservation.name,
-          new Date(request.reservation.date).toLocaleDateString(),
-          request.reservation.time,
-          request.reservation.number_of_guests.toString(),
-          request.reservation.phone,
-          `http://localhost:3000/reservations/${createdReservation.id}`,
-        );
-      } catch (error) {
-        console.error('Error sending email:', error);
-        throw error;
-      }
+      await uow.saveChanges();
 
-      await uow.saveChanges(); // Commit transaction
+      await this.sendEmail(
+        createdReservation,
+        'template_375sbwi',
+        createdReservation.id,
+      );
+
       return createdReservation;
     });
   }
 
   async getReservationById(id: string): Promise<ReservationDetailResponse> {
-    // initialize connection
     const context = using(() => this.unitOfWorkFactory.create());
 
     return context(async (uow) => {
@@ -131,9 +123,7 @@ export class ReservationsService {
         throw new ReservationNotFoundError();
       }
 
-      return {
-        reservation: reservation,
-      };
+      return { reservation };
     });
   }
 
@@ -143,9 +133,7 @@ export class ReservationsService {
     return context(async (uow) => {
       try {
         const reservations = await uow.reservationRepository.findAll();
-        return {
-          reservations: reservations,
-        };
+        return { reservations };
       } catch (error) {
         await uow.rollbackChanges();
         throw error;
@@ -153,14 +141,21 @@ export class ReservationsService {
     });
   }
 
-  // create new method for delete with param id: string
   async deleteReservation(id: string) {
     const context = using(() => this.unitOfWorkFactory.create());
 
     return context(async (uow) => {
       await uow.initialize();
+      const reservation = await uow.reservationRepository.findById(id);
+
+      if (!reservation) {
+        throw new ReservationNotFoundError();
+      }
+
       await uow.reservationRepository.deleteReservationById(id);
       await uow.saveChanges();
+
+      await this.sendEmail(reservation, 'template_znhwutl', id);
     });
   }
 }

@@ -5,7 +5,6 @@ export interface IReservation {
   id: string;
   name: string;
   email: string;
-  counter_code: string;
   phone: string;
   date: Date;
   time: string;
@@ -18,7 +17,6 @@ export class ReservationModel extends BaseEntity<IReservation> {
   id: string;
   name: string;
   email: string;
-  countryCode: string;
   phone: string;
   date: Date;
   time: string;
@@ -31,7 +29,6 @@ export class ReservationModel extends BaseEntity<IReservation> {
     this.id = data.id;
     this.name = data.name;
     this.email = data.email;
-    this.countryCode = data.counter_code;
     this.phone = data.phone;
     this.date = data.date;
     this.time = data.time;
@@ -43,7 +40,6 @@ export class ReservationModel extends BaseEntity<IReservation> {
   static createNew(
     name: string,
     email: string,
-    countryCode: string,
     phone: string,
     date: Date,
     time: string,
@@ -53,7 +49,6 @@ export class ReservationModel extends BaseEntity<IReservation> {
       id: uuidv4(),
       name,
       email,
-      counter_code: countryCode,
       phone,
       date,
       time,
@@ -68,7 +63,6 @@ export class ReservationModel extends BaseEntity<IReservation> {
       id: this.id,
       name: this.name,
       email: this.email,
-      counter_code: this.countryCode,
       phone: this.phone,
       date: this.date,
       time: this.time,

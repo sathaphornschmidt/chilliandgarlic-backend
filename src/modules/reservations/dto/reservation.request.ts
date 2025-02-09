@@ -20,10 +20,6 @@ export class CreateReservation {
 
   @IsString()
   @IsNotEmpty()
-  country_code: string;
-
-  @IsString()
-  @IsNotEmpty()
   phone: string;
 
   @IsDate()

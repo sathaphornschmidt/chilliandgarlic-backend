@@ -1,11 +1,13 @@
 import { Knex } from 'knex';
 import { BaseRepository } from '../repository/BaseRepository';
 import { ReservationsRepository } from '@/modules/reservations/reservation.repository';
+import { AdminUserRepository } from '@/modules/authentication/admin-user.repository';
 
 export class UnitOfWorkContext {
   private transaction: Knex.Transaction | null = null;
   // Step1: Add new repository here
   public reservationRepository: ReservationsRepository;
+  public adminUserRepository: AdminUserRepository;
 
   constructor(private knexInstance: Knex) {}
 

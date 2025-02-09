@@ -17,12 +17,14 @@ import {
   ReservationDetailResponse,
   ReservationsResponse,
 } from './dto/reservation.response';
+import { Authenticated } from '../authentication/auth.decorator';
 
 @Controller('/reservations')
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
   @Get('/')
+  @Authenticated()
   async findAll(): Promise<ReservationsResponse> {
     return this.reservationsService.findAllReservations();
   }
