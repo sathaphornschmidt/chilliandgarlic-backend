@@ -1,6 +1,11 @@
 import { BaseEntity } from '@/abstractions/BaseEntity';
 import { v4 as uuidv4 } from 'uuid';
 
+export enum ReservationStatus {
+  BOOKED = 'booked',
+  CANCELLED = 'canceled',
+}
+
 export interface IReservation {
   id: string;
   name: string;
@@ -9,6 +14,9 @@ export interface IReservation {
   date: Date;
   time: string;
   number_of_guests: number;
+  status: ReservationStatus;
+  canceled_by?: string | null;
+  canceled_at?: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -21,6 +29,9 @@ export class ReservationModel extends BaseEntity<IReservation> {
   date: Date;
   time: string;
   numberOfGuests: number;
+  status: ReservationStatus;
+  canceledBy: string;
+  canceledAt: Date;
   createdAt: Date;
   updatedAt: Date;
 
@@ -33,6 +44,9 @@ export class ReservationModel extends BaseEntity<IReservation> {
     this.date = data.date;
     this.time = data.time;
     this.numberOfGuests = data.number_of_guests;
+    this.status = data.status;
+    this.canceledBy = data.canceled_by;
+    this.canceledAt = data.canceled_at;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -53,6 +67,9 @@ export class ReservationModel extends BaseEntity<IReservation> {
       date,
       time,
       number_of_guests: numberOfGuest,
+      status: ReservationStatus.BOOKED,
+      canceled_by: null,
+      canceled_at: null,
       created_at: new Date(),
       updated_at: new Date(),
     });
@@ -67,6 +84,9 @@ export class ReservationModel extends BaseEntity<IReservation> {
       date: this.date,
       time: this.time,
       number_of_guests: this.numberOfGuests,
+      status: this.status,
+      canceled_by: this.canceledBy,
+      canceled_at: this.canceledAt,
       created_at: this.createdAt,
       updated_at: this.updatedAt,
     };

@@ -1,6 +1,11 @@
+import { ReservationEmailDomainService } from './../reservation-emails/reservationEmail.domainService';
 import { Injectable } from '@nestjs/common';
 import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
-import { IReservation, ReservationModel } from './entities/Reservation';
+import {
+  IReservation,
+  ReservationModel,
+  ReservationStatus,
+} from './entities/Reservation';
 import {
   CreateReservationRequest,
   EditReservationRequest,
@@ -9,39 +14,25 @@ import {
   ReservationDetailResponse,
   ReservationsResponse,
 } from './dto/reservation.response';
-import { ReservationNotFoundError } from './errors/ReservationError';
+import {
+  ReservationExpiredError,
+  ReservationNotFoundError,
+} from './errors/ReservationError';
 import { EmailService } from '../emails/email.service';
 import { using } from '@/utils/Disposable';
+import { ReservationEmailType } from '../reservation-emails/entities/ReservationEmail';
 
 @Injectable()
 export class ReservationsService {
   constructor(
-    private readonly unitOfWorkFactory: UnitOfWorkFactory,
-    private readonly emailService: EmailService,
+    private readonly _unitOfWorkFactory: UnitOfWorkFactory,
+    private readonly _reservationEmailDomainService: ReservationEmailDomainService,
   ) {}
 
-  private formatDate(date: Date | string): string {
-    return new Date(date).toISOString().split('T')[0]; // ✅ แปลงวันที่เป็น YYYY-MM-DD
-  }
-
-  private async sendEmail(
-    reservation: IReservation,
-    templateId: string,
-    reservationId: string,
-  ) {
-    try {
-      await this.emailService.sendEmailUsingApi(
-        reservation.email,
-        reservation.name,
-        this.formatDate(reservation.date),
-        reservation.time,
-        reservation.number_of_guests.toString(),
-        reservation.phone,
-        `http://localhost:3000/reservations/${reservationId}`,
-        templateId,
-      );
-    } catch (error) {
-      console.error(`❌ Error sending email (Template: ${templateId}):`, error);
+  private validateExpiredReservation(reservation) {
+    const bookedDate = new Date(reservation.date);
+    if (bookedDate < new Date()) {
+      throw new ReservationExpiredError();
     }
   }
 
@@ -49,7 +40,7 @@ export class ReservationsService {
     id: string,
     request: EditReservationRequest,
   ): Promise<IReservation> {
-    const context = using(() => this.unitOfWorkFactory.create());
+    const context = using(() => this._unitOfWorkFactory.create());
 
     return context(async (uow) => {
       await uow.initialize();
@@ -74,9 +65,13 @@ export class ReservationsService {
         updatingReservation,
       );
 
-      await uow.saveChanges();
+      await this._reservationEmailDomainService.sendReservationEmail(
+        uow,
+        ReservationEmailType.UPDATE,
+        updatedReservation,
+      );
 
-      await this.sendEmail(updatedReservation, 'template_375sbwi', id);
+      await uow.saveChanges();
 
       return updatedReservation;
     });
@@ -85,7 +80,7 @@ export class ReservationsService {
   public async createReservation(
     request: CreateReservationRequest,
   ): Promise<IReservation> {
-    const context = using(() => this.unitOfWorkFactory.create());
+    const context = using(() => this._unitOfWorkFactory.create());
 
     return context(async (uow) => {
       const reservationToCreate = ReservationModel.createNew(
@@ -101,20 +96,20 @@ export class ReservationsService {
         reservationToCreate.toEntity(),
       );
 
-      await uow.saveChanges();
-
-      await this.sendEmail(
+      await this._reservationEmailDomainService.sendReservationEmail(
+        uow,
+        ReservationEmailType.BOOK,
         createdReservation,
-        'template_375sbwi',
-        createdReservation.id,
       );
+
+      await uow.saveChanges();
 
       return createdReservation;
     });
   }
 
   async getReservationById(id: string): Promise<ReservationDetailResponse> {
-    const context = using(() => this.unitOfWorkFactory.create());
+    const context = using(() => this._unitOfWorkFactory.create());
 
     return context(async (uow) => {
       const reservation = await uow.reservationRepository.findById(id);
@@ -128,7 +123,7 @@ export class ReservationsService {
   }
 
   async findAllReservations(): Promise<ReservationsResponse> {
-    const context = using(() => this.unitOfWorkFactory.create());
+    const context = using(() => this._unitOfWorkFactory.create());
 
     return context(async (uow) => {
       try {
@@ -141,8 +136,8 @@ export class ReservationsService {
     });
   }
 
-  async deleteReservation(id: string) {
-    const context = using(() => this.unitOfWorkFactory.create());
+  async cancelReservation(id: string) {
+    const context = using(() => this._unitOfWorkFactory.create());
 
     return context(async (uow) => {
       await uow.initialize();
@@ -152,10 +147,23 @@ export class ReservationsService {
         throw new ReservationNotFoundError();
       }
 
-      await uow.reservationRepository.deleteReservationById(id);
-      await uow.saveChanges();
+      this.validateExpiredReservation(reservation);
 
-      await this.sendEmail(reservation, 'template_znhwutl', id);
+      const canceledBy = 'customer';
+
+      await uow.reservationRepository.update(id, {
+        status: ReservationStatus.CANCELLED,
+        canceled_by: canceledBy,
+        canceled_at: new Date(),
+      });
+
+      await this._reservationEmailDomainService.sendReservationEmail(
+        uow,
+        ReservationEmailType.CANCEL,
+        reservation,
+      );
+
+      await uow.saveChanges();
     });
   }
 }
