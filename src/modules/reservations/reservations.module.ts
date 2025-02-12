@@ -4,9 +4,10 @@ import { ReservationsService } from './reservations.service';
 import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
 import { DatabaseModule } from '@/databases/database.module';
 import { EmailModule } from '../emails/email.module';
+import { ReservationEmailsModule } from '../reservation-emails/reservationsEmail.module';
 
 @Module({
-  imports: [DatabaseModule, EmailModule],
+  imports: [DatabaseModule, ReservationEmailsModule, EmailModule],
   controllers: [ReservationsController],
   providers: [ReservationsService, UnitOfWorkFactory], // Add services and factories here
 })
