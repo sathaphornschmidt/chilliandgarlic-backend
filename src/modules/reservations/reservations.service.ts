@@ -18,9 +18,9 @@ import {
   ReservationExpiredError,
   ReservationNotFoundError,
 } from './errors/ReservationError';
-import { EmailService } from '../emails/email.service';
 import { using } from '@/utils/Disposable';
 import { ReservationEmailType } from '../reservation-emails/entities/ReservationEmail';
+import { Request } from 'express';
 
 @Injectable()
 export class ReservationsService {
@@ -136,7 +136,7 @@ export class ReservationsService {
     });
   }
 
-  async cancelReservation(id: string) {
+  async cancelReservation(session: Request['session'], id: string) {
     const context = using(() => this._unitOfWorkFactory.create());
 
     return context(async (uow) => {
@@ -149,7 +149,7 @@ export class ReservationsService {
 
       this.validateExpiredReservation(reservation);
 
-      const canceledBy = 'customer';
+      const canceledBy = session?.user?.username ?? 'customer';
 
       await uow.reservationRepository.update(id, {
         status: ReservationStatus.CANCELLED,

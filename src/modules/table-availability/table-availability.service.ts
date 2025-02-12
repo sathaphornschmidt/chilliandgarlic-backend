@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ReservationsService } from '../reservations/reservations.service';
 import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
-import { IReservation } from '../reservations/entities/Reservation';
+import { ReservationStatus } from '../reservations/entities/Reservation';
 import { using } from '@/utils/Disposable';
 
 @Injectable()
@@ -35,7 +34,10 @@ export class TableAvailabilityService {
       reservations.forEach((reservation) => {
         const reservationTime = reservation.time;
 
-        if (remainingQuota[reservationTime] !== undefined) {
+        if (
+          remainingQuota[reservationTime] !== undefined &&
+          reservation.status !== ReservationStatus.CANCELLED
+        ) {
           remainingQuota[reservationTime] = Math.max(
             0,
             remainingQuota[reservationTime] - 1,

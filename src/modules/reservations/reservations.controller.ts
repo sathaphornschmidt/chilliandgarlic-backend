@@ -7,6 +7,8 @@ import {
   Patch,
   Delete,
   Put,
+  Session,
+  Req,
 } from '@nestjs/common';
 import { IReservation } from './entities/Reservation';
 import { ReservationsService } from './reservations.service';
@@ -20,6 +22,7 @@ import {
 } from './dto/reservation.response';
 import { Authenticated } from '../authentication/auth.decorator';
 import { EmptyResponse } from '@/utils/EmptyResponse';
+import { Request, Response } from 'express';
 
 @Controller('/reservations')
 export class ReservationsController {
@@ -67,10 +70,14 @@ export class ReservationsController {
     }
   }
 
-  @Put('/cancel')
-  async cancelById(@Param('id') id: string): Promise<EmptyResponse> {
+  @Put('/:id/cancel')
+  async cancelById(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<EmptyResponse> {
     try {
-      await this.reservationsService.cancelReservation(id);
+      console.log('session', req.session);
+      await this.reservationsService.cancelReservation(req.session, id);
       return {};
     } catch (error) {
       console.log('error occurred', error);
