@@ -1,6 +1,6 @@
 export interface IReservationEmail {
   id: string;
-  reservationId: string;
+  reservation_id: string;
   email: string;
   created_at: Date;
   updated_at: Date;

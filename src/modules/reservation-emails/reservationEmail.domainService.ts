@@ -62,13 +62,13 @@ export class ReservationEmailDomainService {
       const reservationEmail: IReservationEmail = {
         id: uuidv4(),
         email: reservation.email,
-        reservationId: reservation.id,
+        reservation_id: reservation.id,
         type: emailType,
         updated_at: new Date(),
         created_at: new Date(),
       };
 
-      uow.reservationEmailRepository.create(reservationEmail);
+     await uow.reservationEmailRepository.create(reservationEmail);
     }
   }
 }

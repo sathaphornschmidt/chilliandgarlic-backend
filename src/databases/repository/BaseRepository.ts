@@ -14,12 +14,9 @@ export abstract class BaseRepository<T> {
     }
   }
 
-  // Method to handle errors and return empty array in case of invalid input
-  private handleDatabaseError(error: any): undefined {
-    // Optionally, log the error
+  private handleDatabaseError(error: any): never {
     console.error('Database Error:', error);
-    // Return an empty array when there's an invalid format or other DB errors
-    return undefined;
+    throw error;
   }
 
   async findById(id: string | number): Promise<T | undefined> {
@@ -27,7 +24,7 @@ export abstract class BaseRepository<T> {
       const result = await this.getQuery().select('*').where({ id }).first();
       return result;
     } catch (error) {
-      return this.handleDatabaseError(error);
+      this.handleDatabaseError(error);
     }
   }
 
@@ -36,7 +33,7 @@ export abstract class BaseRepository<T> {
       const result = await this.getQuery().select('*');
       return result;
     } catch (error) {
-      return this.handleDatabaseError(error);
+      this.handleDatabaseError(error);
     }
   }
 
@@ -47,7 +44,7 @@ export abstract class BaseRepository<T> {
         .returning('*');
       return createdEntity;
     } catch (error) {
-      return this.handleDatabaseError(error);
+      this.handleDatabaseError(error);
     }
   }
 
@@ -61,20 +58,20 @@ export abstract class BaseRepository<T> {
       const updatedEntities = await this.getQuery()
         .where({ id })
         .update(entity)
-        .returning('*'); // Returns an array of updated rows
+        .returning('*');
 
       if (!updatedEntities || updatedEntities.length === 0) {
         console.warn(`Update failed: No entity found with ID ${id}`);
-        return null; // Explicitly return null if no rows were updated
+        return null;
       }
 
-      const updatedEntity = updatedEntities[0]; // Get first element from the returned array
+      const updatedEntity = updatedEntities[0];
       console.log('Update successful:', updatedEntity);
 
       return updatedEntity;
     } catch (error) {
       console.error(`Error updating entity with ID ${id}:`, error);
-      throw new Error('Failed to update entity'); // Throw an explicit error
+      throw new Error('Failed to update entity');
     }
   }
 
@@ -82,8 +79,8 @@ export abstract class BaseRepository<T> {
     try {
       await this.getQuery().where({ id }).delete();
     } catch (error) {
-      // Log or handle error
       console.error('Delete error:', error);
+      throw error;
     }
   }
 }
