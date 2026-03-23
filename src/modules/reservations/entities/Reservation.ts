@@ -15,6 +15,7 @@ export interface IReservation {
   time: string;
   number_of_guests: number;
   status: ReservationStatus;
+  edit_token?: string | null;
   canceled_by?: string | null;
   canceled_at?: Date | null;
   created_at: Date;
@@ -30,6 +31,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
   time: string;
   numberOfGuests: number;
   status: ReservationStatus;
+  editToken: string;
   canceledBy: string;
   canceledAt: Date;
   createdAt: Date;
@@ -45,6 +47,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
     this.time = data.time;
     this.numberOfGuests = data.number_of_guests;
     this.status = data.status;
+    this.editToken = data.edit_token;
     this.canceledBy = data.canceled_by;
     this.canceledAt = data.canceled_at;
     this.createdAt = data.created_at;
@@ -68,6 +71,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
       time,
       number_of_guests: numberOfGuest,
       status: ReservationStatus.BOOKED,
+      edit_token: uuidv4(),
       canceled_by: null,
       canceled_at: null,
       created_at: new Date(),
@@ -85,6 +89,7 @@ export class ReservationModel extends BaseEntity<IReservation> {
       time: this.time,
       number_of_guests: this.numberOfGuests,
       status: this.status,
+      edit_token: this.editToken,
       canceled_by: this.canceledBy,
       canceled_at: this.canceledAt,
       created_at: this.createdAt,

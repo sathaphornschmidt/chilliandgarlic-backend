@@ -5,9 +5,7 @@ import {
   Body,
   Param,
   Patch,
-  Delete,
   Put,
-  Session,
   Req,
 } from '@nestjs/common';
 import { IReservation } from './entities/Reservation';
@@ -22,7 +20,7 @@ import {
 } from './dto/reservation.response';
 import { Authenticated } from '../authentication/auth.decorator';
 import { EmptyResponse } from '@/utils/EmptyResponse';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 @Controller('/reservations')
 export class ReservationsController {
@@ -32,6 +30,13 @@ export class ReservationsController {
   @Authenticated()
   async findAll(): Promise<ReservationsResponse> {
     return this.reservationsService.findAllReservations();
+  }
+
+  @Get('/token/:token')
+  async getByToken(
+    @Param('token') token: string,
+  ): Promise<ReservationDetailResponse> {
+    return this.reservationsService.getReservationByToken(token);
   }
 
   @Get('/:id')

@@ -122,6 +122,24 @@ export class ReservationsService {
     });
   }
 
+  // 🔥 เพิ่มอันนี้เข้าไป
+  async getReservationByToken(token: string): Promise<ReservationDetailResponse> {
+    const context = using(() => this._unitOfWorkFactory.create());
+
+    return context(async (uow) => {
+      const reservation = await uow.reservationRepository
+        .getQuery()
+        .where({ edit_token: token })
+        .first();
+
+      if (!reservation) {
+        throw new ReservationNotFoundError();
+      }
+
+      return { reservation };
+    });
+  }
+
   async findAllReservations(): Promise<ReservationsResponse> {
     const context = using(() => this._unitOfWorkFactory.create());
 

@@ -13,13 +13,13 @@ export class ReservationEmailDomainService {
   constructor(private readonly _emailService: EmailService) {}
 
   private formatDate(date: Date | string): string {
-    return new Date(date).toISOString().split('T')[0]; // ✅ แปลงวันที่เป็น YYYY-MM-DD
+    return new Date(date).toISOString().split('T')[0];
   }
 
   private async sendEmail(
     reservation: IReservation,
     templateId: string,
-    reservationId: string,
+    reservationToken: string,
   ) {
     try {
       await this._emailService.sendEmailUsingApi(
@@ -29,7 +29,7 @@ export class ReservationEmailDomainService {
         reservation.time,
         reservation.number_of_guests.toString(),
         reservation.phone,
-        `http://localhost:3000/reservations/${reservationId}`,
+        `${process.env.FRONTEND_URL}/r/${reservationToken}`,
         templateId,
       );
     } catch (error) {
@@ -56,8 +56,8 @@ export class ReservationEmailDomainService {
     reservation: IReservation,
   ) {
     const templateId = this.getTemplateIdFromType(emailType);
-    if (templateId) {
-      await this.sendEmail(reservation, templateId, reservation.id);
+    if (templateId && reservation.edit_token) {
+      await this.sendEmail(reservation, templateId, reservation.edit_token);
 
       const reservationEmail: IReservationEmail = {
         id: uuidv4(),
@@ -68,7 +68,7 @@ export class ReservationEmailDomainService {
         created_at: new Date(),
       };
 
-     await uow.reservationEmailRepository.create(reservationEmail);
+      await uow.reservationEmailRepository.create(reservationEmail);
     }
   }
 }
