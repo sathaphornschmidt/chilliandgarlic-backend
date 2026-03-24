@@ -4,7 +4,7 @@ import { ReservationsRepository } from '@/modules/reservations/reservation.repos
 import { AdminUserRepository } from '@/modules/authentication/admin-user.repository';
 import { ReservationEmailsRepository } from '@/modules/reservation-emails/reservationEmail.repository';
 
-export class UnitOfWorkContext {
+export class unitOfWorkContext {
   private transaction: Knex.Transaction | null = null;
   // Step1: Add new repository here
   public reservationRepository: ReservationsRepository;

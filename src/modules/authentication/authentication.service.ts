@@ -1,6 +1,6 @@
 import { Injectable, Req } from '@nestjs/common';
 import { LoginRequest } from './dto/LoginRequest';
-import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
+import { unitOfWorkFactory } from '@/databases/unit-of-work/unitOfWorkFactory';
 import { using } from '@/utils/Disposable';
 import {
   IncorrectPasswordError,
@@ -9,7 +9,7 @@ import {
 
 @Injectable()
 export class AuthenticationService {
-  constructor(private readonly unitOfWorkFactory: UnitOfWorkFactory) {}
+  constructor(private readonly unitOfWorkFactory: unitOfWorkFactory) {}
 
   public async validateUsernamePassword(request: LoginRequest) {
     const context = using(() => this.unitOfWorkFactory.create());

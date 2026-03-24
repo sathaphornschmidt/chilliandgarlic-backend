@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
+import { unitOfWorkFactory } from '@/databases/unit-of-work/unitOfWorkFactory';
 import { TableAvailabilityService } from './table-availability.service';
 import { TableAvailabilityController } from './table-availability.controller';
 import { DatabaseModule } from '@/databases/database.module';
@@ -7,6 +7,6 @@ import { DatabaseModule } from '@/databases/database.module';
 @Module({
   imports: [DatabaseModule],
   controllers: [TableAvailabilityController],
-  providers: [TableAvailabilityService, UnitOfWorkFactory],
+  providers: [TableAvailabilityService, unitOfWorkFactory],
 })
 export class TableAvailabilityModule {}

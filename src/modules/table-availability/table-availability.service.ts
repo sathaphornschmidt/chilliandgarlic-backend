@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
+import { unitOfWorkFactory } from '@/databases/unit-of-work/unitOfWorkFactory';
 import { ReservationStatus } from '../reservations/entities/Reservation';
 import { using } from '@/utils/Disposable';
 
@@ -20,7 +20,7 @@ export class TableAvailabilityService {
     '20:00': 4,
     '21:00': 4,
   };
-  constructor(private readonly unitOfWorkFactory: UnitOfWorkFactory) {}
+  constructor(private readonly unitOfWorkFactory: unitOfWorkFactory) {}
 
   public async getTableAvailabilityByDay(date: string) {
     const context = using(() => this.unitOfWorkFactory.create());

@@ -1,6 +1,6 @@
 import { ReservationEmailDomainService } from './../reservation-emails/reservationEmail.domainService';
 import { Injectable } from '@nestjs/common';
-import { UnitOfWorkFactory } from '@/databases/unit-of-work/UnitOfWorkFactory';
+import { unitOfWorkFactory } from '@/databases/unit-of-work/unitOfWorkFactory';
 import {
   IReservation,
   ReservationModel,
@@ -25,7 +25,7 @@ import { Request } from 'express';
 @Injectable()
 export class ReservationsService {
   constructor(
-    private readonly _unitOfWorkFactory: UnitOfWorkFactory,
+    private readonly _unitOfWorkFactory: unitOfWorkFactory,
     private readonly _reservationEmailDomainService: ReservationEmailDomainService,
   ) {}
 

@@ -5,7 +5,7 @@ import {
   IReservationEmail,
   ReservationEmailType,
 } from './entities/ReservationEmail';
-import { UnitOfWorkContext } from '@/databases/unit-of-work/UnitOfWorkContext';
+import { unitOfWorkContext } from '@/databases/unit-of-work/unitOfWorkContext';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -51,7 +51,7 @@ export class ReservationEmailDomainService {
   }
 
   public async sendReservationEmail(
-    uow: UnitOfWorkContext,
+    uow: unitOfWorkContext,
     emailType: ReservationEmailType,
     reservation: IReservation,
   ) {

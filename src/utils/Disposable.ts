@@ -1,9 +1,9 @@
-import { UnitOfWorkContext } from '@/databases/unit-of-work/unitOfWorkContext';
+import { unitOfWorkContext } from '@/databases/unit-of-work/unitOfWorkContext';
 export function using(
-  contextFactory: () => Promise<UnitOfWorkContext>,
-): <T>(action: (context: UnitOfWorkContext) => Promise<T>) => Promise<T> {
+  contextFactory: () => Promise<unitOfWorkContext>,
+): <T>(action: (context: unitOfWorkContext) => Promise<T>) => Promise<T> {
   return async <T>(
-    action: (context: UnitOfWorkContext) => Promise<T>,
+    action: (context: unitOfWorkContext) => Promise<T>,
   ): Promise<T> => {
     const context = await contextFactory();
     try {
