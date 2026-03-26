@@ -28,4 +28,4 @@ const config: { [key: string]: Knex.Config } = {
   production: sharedConfig,
 };
 
-export default config;
+module.exports = config;
