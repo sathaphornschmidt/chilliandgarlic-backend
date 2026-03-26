@@ -13,10 +13,22 @@ async function bootstrap() {
   app.useGlobalFilters(new BaseApplicationErrorFilter());
 
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'https://chilliandgarlic.vercel.app',
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'https://chilliandgarlic.vercel.app',
+      ];
+
+      const isVercelPreview =
+        origin?.endsWith('.vercel.app') &&
+        origin.includes('chilliandgarlic');
+
+      if (!origin || allowedOrigins.includes(origin) || isVercelPreview) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS not allowed for origin: ${origin}`), false);
+      }
+    },
     credentials: true,
   });
 
