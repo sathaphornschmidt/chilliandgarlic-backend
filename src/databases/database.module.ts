@@ -1,7 +1,7 @@
 import { Global, Module, Provider } from '@nestjs/common';
 import knex from 'knex';
 const knexConfig = require('../../knexfile');
-import { UnitOfWorkFactory } from './unit-of-work/unitOfWorkFactory';
+import { unitOfWorkFactory } from './unit-of-work/unitOfWorkFactory';
 
 const environment = process.env.NODE_ENV || 'development';
 const knexInstance = knex(knexConfig[environment]);
@@ -29,8 +29,8 @@ const databaseHealthCheckProvider: Provider = {
   providers: [
     knexProvider,
     databaseHealthCheckProvider,
-    UnitOfWorkFactory,
+    unitOfWorkFactory,
   ],
-  exports: [knexProvider, UnitOfWorkFactory],
+  exports: [knexProvider, unitOfWorkFactory],
 })
 export class DatabaseModule {}
